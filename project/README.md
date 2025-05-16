@@ -74,6 +74,7 @@ The system uses a Solidity smart contract deployed on the Sepolia testnet for st
    WEB3_PROVIDER_URL=your_infura_or_alchemy_url
    CONTRACT_ADDRESS=your_deployed_contract_address
    CONTRACT_OWNER_PRIVATE_KEY=your_private_key
+   ADMIN_ADDRESS=your_metamask_address
    ```
 
 4. Deploy the smart contract to Sepolia testnet using Remix IDE.
