@@ -226,7 +226,8 @@ const CaseList = () => {
     const fetchCases = async () => {
       try {
         const response = await axios.get('/api/cases');
-        setCases(response.data);
+        setCases(Array.isArray(response.data) ? response.data : response.data.cases);
+
       } catch (error) {
         console.error('Error fetching cases:', error);
       } finally {

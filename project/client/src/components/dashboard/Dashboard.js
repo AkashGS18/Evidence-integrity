@@ -224,18 +224,9 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         // Fetch cases
-        const casesResponse = await axios.get('/api/cases');
-        setCases(casesResponse.data);
-        
-        // For a real implementation, you would have an endpoint for dashboard stats
-        // For this example, we'll calculate based on the cases
-        setStats({
-          totalCases: casesResponse.data.length,
-          totalEvidence: 0, // In a real app, this would come from the backend
-          verifiedEvidence: 0,
-          tamperedEvidence: 0
-        });
-        
+        const response = await axios.get('/api/cases');
+        setCases(response.data.cases);
+        setStats(response.data.stats);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);

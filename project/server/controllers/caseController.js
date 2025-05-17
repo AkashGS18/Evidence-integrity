@@ -37,12 +37,47 @@ exports.createCase = async (req, res) => {
 };
 
 // @route   GET api/cases
-// @desc    Get all cases
+// @desc    Get all cases with statistics
 // @access  Private (Admin)
 exports.getAllCases = async (req, res) => {
   try {
     const cases = await Case.find().sort({ createdAt: -1 });
-    res.json(cases);
+    
+    // Get evidence statistics
+    const evidenceStats = await Evidence.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalEvidence: { $sum: 1 },
+          verifiedEvidence: {
+            $sum: {
+              $cond: [{ $eq: ["$verificationStatus", "verified"] }, 1, 0]
+            }
+          },
+          tamperedEvidence: {
+            $sum: {
+              $cond: [{ $eq: ["$verificationStatus", "tampered"] }, 1, 0]
+            }
+          }
+        }
+      }
+    ]);
+
+    const stats = evidenceStats.length > 0 ? evidenceStats[0] : {
+      totalEvidence: 0,
+      verifiedEvidence: 0,
+      tamperedEvidence: 0
+    };
+
+    res.json({
+      cases,
+      stats: {
+        totalCases: cases.length,
+        totalEvidence: stats.totalEvidence,
+        verifiedEvidence: stats.verifiedEvidence,
+        tamperedEvidence: stats.tamperedEvidence
+      }
+    });
   } catch (err) {
     console.error('Error fetching cases:', err);
     res.status(500).json({ msg: 'Server error' });
