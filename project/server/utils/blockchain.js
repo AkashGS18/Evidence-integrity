@@ -25,13 +25,14 @@ web3.eth.accounts.wallet.add(account);
  */
 const addEvidenceToBlockchain = async (caseId, evidenceId, fileHash) => {
   try {
-    const gasPrice = await web3.eth.getGasPrice();
+    const currentGasPrice = await web3.eth.getGasPrice();
+     const gasPrice = web3.utils.toBN(currentGasPrice).muln(120).divn(100).toString();
     const gas = await contract.methods.addEvidence(caseId, evidenceId, fileHash).estimateGas({ from: account.address });
     
     const tx = {
       from: account.address,
       to: process.env.CONTRACT_ADDRESS,
-      gas,
+      gas: Math.ceil(gas * 1.2),
       gasPrice,
       data: contract.methods.addEvidence(caseId, evidenceId, fileHash).encodeABI()
     };
@@ -54,9 +55,18 @@ const addEvidenceToBlockchain = async (caseId, evidenceId, fileHash) => {
  */
 const verifyEvidenceOnBlockchain = async (evidenceId, fileHash) => {
   try {
+    let retries=3;
+    while (retries>0){
+    try{
     const isVerified = await contract.methods.verifyEvidence(evidenceId, fileHash).call();
     return isVerified;
-  } catch (error) {
+  } catch (err){
+    retries--;
+     if (retries === 0) throw err;
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+      }
+    }
+  }catch (error) {
     console.error('Error verifying evidence on blockchain:', error);
     throw error;
   }
